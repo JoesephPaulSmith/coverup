@@ -13,7 +13,8 @@ With the web app version of this game, however, I want to use the following symb
 
 ## Key Directories
 
-To be determined after the nextjs project is initialized
+- `app/` - where the main app code will live
+- `public/` - files to be packaged directly when compiled
 
 ## Standards
 
