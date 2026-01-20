@@ -1,0 +1,22 @@
+{
+    "name": "Cover Up Game",
+    "short_name": "Cover Up",
+    "description": "A mobile-first progressive web app version of the classic Cover Up game from The Price is Right",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f9fafb",
+    "theme_color": "#2563eb",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
