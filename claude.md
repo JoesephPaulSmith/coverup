@@ -1,3 +1,9 @@
+# Project Context
+
+When creating and working with this codebase, prioritize readability over cleverness. Ask clarifying questions before making architectural changes. 
+
+## About This Project
+
 We are going to create a progressive web app, mobile first version of the classic pricing game Cover Up from the USA version of The Price is Right. Gameplay is described on priceisright.fandom.com/wiki/Cover_Up as follows (with some minor editing):
 
 - A game board is presented with five spaces at the bottom. Digits are provided above each space-- two options for the first space, three for the second and so on up to six options for the fifth space. The contestant must choose a digit and cover up each space.
@@ -5,3 +11,15 @@ We are going to create a progressive web app, mobile first version of the classi
 
 With the web app version of this game, however, I want to use the following symbols instead of the digits zero thru nine: 🌑🌕⭐️☀️☁️💧❤️♦️♠️♣️. As the original game is for a specified car, making at least the first and second numbers somewhat predictable, I would like to simulate similar predictability with the first and second symbols. For example: Sun or Moon for the first symbol, with the correct symbol being an indicator of the local time of day. The second symbol could be a moon phase or an indicator of the local weather. Things get less predictable for digits 3, 4, and 5. Thus the correct symbols can be any of the 10 available.
 
+## Key Directories
+
+To be determined after the nextjs project is initialized
+
+## Standards
+
+- 4 space indents
+- More to be determined
+
+## Notes
+
+- None yet
