@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 
 const SYMBOLS = ['🌑', '🌕', '⭐️', '☀️', '☁️', '💧', '❤️', '♦️', '♠️', '♣️'];
-const PLACEHOLDER_SYMBOLS = ['☸️', '✝️', '♒️', '♈️', '☮️'];
+const PLACEHOLDER_SYMBOLS = ['☸️', '✝️', '♒️', '♈️', '☮️', '🛑', '❇️', '✳️', '🛗', '🛜', '📶', '🎦'];
 
 type GameState = 'playing' | 'won' | 'lost';
 
 export default function Home() {
     const [gameGrid, setGameGrid] = useState<string[][]>([]);
     const [correctAnswer, setCorrectAnswer] = useState<string[]>([]);
-    const [selectedSymbols, setSelectedSymbols] = useState<string[]>(PLACEHOLDER_SYMBOLS);
-    const [guesses, setGuesses] = useState<string[][]>([]);
+    const [selectedSymbols, setSelectedSymbols] = useState<string[]>(['S', 'T', 'A', 'R', 'T']);
+    const [coveredSymbols, setCoveredSymbols] = useState<Set<string>[]>([new Set(), new Set(), new Set(), new Set(), new Set()]);
     const [correctPositions, setCorrectPositions] = useState<boolean[]>([false, false, false, false, false]);
     const [gameState, setGameState] = useState<GameState>('playing');
     const [previousCorrectCount, setPreviousCorrectCount] = useState(0);
+    const [lastCheckedSymbols, setLastCheckedSymbols] = useState<string[]>([]);
 
     useEffect(() => {
         initializeGame();
@@ -46,13 +47,20 @@ export default function Home() {
             answer[col] = shuffled[Math.floor(Math.random() * numOptions)];
         }
 
+        let starterSymbols = []
+        for (let ss = 0; ss < 5; ss++){
+            const shuffledStarters = shuffleArray([...PLACEHOLDER_SYMBOLS]);
+            starterSymbols.push(shuffledStarters[Math.floor(Math.random() * shuffledStarters.length)])
+        }
+
         setGameGrid(grid);
         setCorrectAnswer(answer);
-        setSelectedSymbols(PLACEHOLDER_SYMBOLS);
-        setGuesses([]);
+        setSelectedSymbols(starterSymbols);
+        setCoveredSymbols([new Set(), new Set(), new Set(), new Set(), new Set()]);
         setCorrectPositions([false, false, false, false, false]);
         setGameState('playing');
         setPreviousCorrectCount(0);
+        setLastCheckedSymbols([]);
     };
 
     const shuffleArray = <T,>(array: T[]): T[] => {
@@ -71,14 +79,40 @@ export default function Home() {
     };
 
     const isCheckEnabled = () => {
-        return gameState === 'playing' && selectedSymbols.every(symbol => !PLACEHOLDER_SYMBOLS.includes(symbol));
+        if (gameState !== 'playing') return false;
+
+        // Check each column
+        for (let i = 0; i < 5; i++) {
+            // Skip columns that are already correct
+            if (correctPositions[i]) continue;
+
+            const symbol = selectedSymbols[i];
+
+            // Must not be a placeholder
+            if (PLACEHOLDER_SYMBOLS.includes(symbol)) return false;
+
+            // If we've checked before, must be a new selection for incorrect positions
+            if (lastCheckedSymbols.length > 0 && symbol === lastCheckedSymbols[i]) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
     const handleCheck = () => {
         if (!isCheckEnabled()) return;
 
-        const newGuesses = [...guesses, [...selectedSymbols]];
-        setGuesses(newGuesses);
+        // Save the symbols we're checking
+        setLastCheckedSymbols([...selectedSymbols]);
+
+        // Mark selected symbols as covered in each column
+        const newCoveredSymbols = coveredSymbols.map((set, idx) => {
+            const newSet = new Set(set);
+            newSet.add(selectedSymbols[idx]);
+            return newSet;
+        });
+        setCoveredSymbols(newCoveredSymbols);
 
         const newCorrectPositions = selectedSymbols.map((symbol, idx) =>
             symbol === correctAnswer[idx]
@@ -96,11 +130,7 @@ export default function Home() {
         } else {
             // Some progress made, continue playing
             setPreviousCorrectCount(correctCount);
-            // Reset selections for incorrect positions
-            const newSelections = selectedSymbols.map((symbol, idx) =>
-                newCorrectPositions[idx] ? symbol : PLACEHOLDER_SYMBOLS[idx]
-            );
-            setSelectedSymbols(newSelections);
+            // Keep current selections - no reset needed
         }
     };
 
@@ -108,17 +138,21 @@ export default function Home() {
         const maxRows = 6;
         const rows: JSX.Element[] = [];
 
-        for (let row = 0; row < maxRows; row++) {
+        for (let row = maxRows - 1; row >= 0; row--) {
             const cells: JSX.Element[] = [];
             for (let col = 0; col < 5; col++) {
                 const gridValue = gameGrid[col]?.[row];
                 if (gridValue) {
+                    // Check if this symbol has been covered (guessed)
+                    const isCovered = coveredSymbols[col]?.has(gridValue);
                     cells.push(
                         <div
                             key={`${row}-${col}`}
-                            className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl bg-gray-200 dark:bg-gray-700 rounded-lg"
+                            className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl rounded-lg ${
+                                isCovered ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
+                            }`}
                         >
-                            {gridValue}
+                            {isCovered ? '🟦' : gridValue}
                         </div>
                     );
                 } else {
@@ -139,23 +173,6 @@ export default function Home() {
             );
         }
 
-        // Add guess history rows
-        guesses.forEach((guess, guessIdx) => {
-            const cells = guess.map((symbol, colIdx) => (
-                <div
-                    key={`guess-${guessIdx}-${colIdx}`}
-                    className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl bg-blue-500 rounded-lg"
-                >
-                    🟦
-                </div>
-            ));
-            rows.push(
-                <div key={`guess-row-${guessIdx}`} className="flex gap-2 sm:gap-3">
-                    {cells}
-                </div>
-            );
-        });
-
         return rows;
     };
 
@@ -164,10 +181,18 @@ export default function Home() {
             return 'ring-4 ring-green-500';
         } else if (gameState === 'lost') {
             return 'ring-4 ring-red-500';
-        } else if (guesses.length > 0 && correctPositions[colIdx]) {
+        } else if (coveredSymbols[colIdx]?.size > 0 && correctPositions[colIdx]) {
             return 'ring-4 ring-cyan-400';
         }
         return '';
+    };
+
+    const getAvailableOptions = (colIdx: number): string[] => {
+        const columnSymbols = gameGrid[colIdx] || [];
+        const covered = coveredSymbols[colIdx] || new Set();
+
+        // Filter out symbols that have already been covered (guessed)
+        return columnSymbols.filter(symbol => !covered.has(symbol));
     };
 
     return (
@@ -191,7 +216,7 @@ export default function Home() {
                                 className={`w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl bg-white dark:bg-gray-800 rounded-lg cursor-pointer appearance-none text-center border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getButtonOutlineClass(colIdx)}`}
                             >
                                 <option value={symbol}>{symbol}</option>
-                                {gameGrid[colIdx]?.map((gridSymbol) => (
+                                {getAvailableOptions(colIdx).map((gridSymbol) => (
                                     gridSymbol !== symbol && (
                                         <option key={gridSymbol} value={gridSymbol}>
                                             {gridSymbol}
