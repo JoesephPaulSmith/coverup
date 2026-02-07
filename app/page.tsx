@@ -237,7 +237,8 @@ export default function Home() {
                                 value={symbol}
                                 onChange={(e) => handleSymbolSelect(colIdx, e.target.value)}
                                 disabled={gameState !== 'playing' || correctPositions[colIdx]}
-                                className={`w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl bg-[#F8EA66] cursor-pointer appearance-none text-center border-2 border-gray-300 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getButtonOutlineClass(colIdx)}`}
+                                style={{ textAlignLast: 'center', paddingInlineStart: 0, paddingInlineEnd: 0 }}
+                                className={`w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl bg-[#F8EA66] cursor-pointer appearance-none text-center p-0 border-2 border-gray-300 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getButtonOutlineClass(colIdx)}`}
                             >
                                 <option value={symbol}>{symbol}</option>
                                 {getAvailableOptions(colIdx).map((gridSymbol) => (
@@ -274,7 +275,7 @@ export default function Home() {
                 )}
 
                 {gameState === 'won' && (
-                    <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                    <p className="text-lg font-semibold text-lime-300">
                         Congratulations! You won!
                     </p>
                 )}
