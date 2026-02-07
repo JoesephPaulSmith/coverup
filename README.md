@@ -2,7 +2,13 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+If ran previously, run the following to clear the prior local build:
+
+```bash
+rm -rf .next
+```
+
+Run the development server:
 
 ```bash
 npm run dev
@@ -14,7 +20,9 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If you have other Next.js apps in development, you may want to specify the port to run the app on locally in `package.json`.
+
+Open [http://localhost:3000](http://localhost:3000) (adjust 3000 to the port of your choosing if you picked one in `package.json`) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

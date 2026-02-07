@@ -16,6 +16,29 @@ export default function Home() {
     const [gameState, setGameState] = useState<GameState>('playing');
     const [previousCorrectCount, setPreviousCorrectCount] = useState(0);
     const [lastCheckedSymbols, setLastCheckedSymbols] = useState<string[]>([]);
+    const [showAbout, setShowAbout] = useState(false);
+    const [stats, setStats] = useState({ attempts: 0, wins: 0 });
+
+    useEffect(() => {
+        const stored = localStorage.getItem('coverup-stats');
+        if (stored) {
+            setStats(JSON.parse(stored));
+        }
+    }, []);
+
+    const recordStat = (won: boolean) => {
+        setStats(prev => {
+            const updated = { attempts: prev.attempts + 1, wins: prev.wins + (won ? 1 : 0) };
+            localStorage.setItem('coverup-stats', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const resetStats = () => {
+        const cleared = { attempts: 0, wins: 0 };
+        setStats(cleared);
+        localStorage.setItem('coverup-stats', JSON.stringify(cleared));
+    };
 
     useEffect(() => {
         initializeGame();
@@ -124,9 +147,11 @@ export default function Home() {
         // Check if all correct
         if (correctCount === 5) {
             setGameState('won');
+            recordStat(true);
         } else if (correctCount === previousCorrectCount) {
             // No new correct answers
             setGameState('lost');
+            recordStat(false);
         } else {
             // Some progress made, continue playing
             setPreviousCorrectCount(correctCount);
@@ -148,8 +173,8 @@ export default function Home() {
                     cells.push(
                         <div
                             key={`${row}-${col}`}
-                            className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl rounded-lg ${
-                                isCovered ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
+                            className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl ${
+                                isCovered ? 'bg-blue-500' : 'bg-[#F8EA66]'
                             }`}
                         >
                             {isCovered ? '🟦' : gridValue}
@@ -159,9 +184,8 @@ export default function Home() {
                     cells.push(
                         <div
                             key={`${row}-${col}`}
-                            className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl bg-black dark:bg-gray-900 rounded-lg"
+                            className="w-14 h-14 sm:w-16 sm:h-16"
                         >
-                            ◼️
                         </div>
                     );
                 }
@@ -196,10 +220,10 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <main className="w-full max-w-md flex flex-col items-center gap-6">
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                    Symbolic Cover Up
+                <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+                    <em><span style={{color: '#FFFF00'}}>Symbolic Cover Up</span></em>
                 </h1>
 
                 <div className="flex flex-col gap-2 sm:gap-3">
@@ -213,7 +237,7 @@ export default function Home() {
                                 value={symbol}
                                 onChange={(e) => handleSymbolSelect(colIdx, e.target.value)}
                                 disabled={gameState !== 'playing' || correctPositions[colIdx]}
-                                className={`w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl bg-white dark:bg-gray-800 rounded-lg cursor-pointer appearance-none text-center border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getButtonOutlineClass(colIdx)}`}
+                                className={`w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl bg-[#F8EA66] cursor-pointer appearance-none text-center border-2 border-gray-300 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getButtonOutlineClass(colIdx)}`}
                             >
                                 <option value={symbol}>{symbol}</option>
                                 {getAvailableOptions(colIdx).map((gridSymbol) => (
@@ -240,7 +264,7 @@ export default function Home() {
                             {correctAnswer.map((symbol, idx) => (
                                 <div
                                     key={idx}
-                                    className="w-12 h-12 flex items-center justify-center text-2xl bg-green-100 dark:bg-green-900 rounded-lg"
+                                    className="w-12 h-12 flex items-center justify-center text-2xl bg-green-100 dark:bg-green-900"
                                 >
                                     {symbol}
                                 </div>
@@ -269,7 +293,62 @@ export default function Home() {
                     >
                         Restart
                     </button>
+                    <button
+                        onClick={() => setShowAbout(true)}
+                        className="w-full py-3 px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors text-lg"
+                    >
+                        About
+                    </button>
                 </div>
+
+                {showAbout && (
+                    <div
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                        onClick={() => setShowAbout(false)}
+                    >
+                        <div
+                            className="bg-white text-gray-900 rounded-lg p-6 max-w-sm w-full shadow-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-xl font-bold mb-3">About</h2>
+                            <p className="mb-4">
+                                A simple symbolic simulator of the classic pricing game <strong>Cover Up</strong> from
+                                {' '}<em>The Price is Right</em>.
+                            </p>
+                            <p className="mb-4">
+                                Built by{' '}
+                                <a
+                                    href="https://jpTheSmithe.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline hover:text-blue-800"
+                                >
+                                    jpTheSmithe.com
+                                </a>
+                            </p>
+                            <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                                <h3 className="font-bold mb-2">Stats</h3>
+                                <p>Games played: {stats.attempts}</p>
+                                <p>Wins: {stats.wins}</p>
+                                <p>Win rate: {stats.attempts > 0 ? Math.round((stats.wins / stats.attempts) * 100) : 0}%</p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={resetStats}
+                                    className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                                >
+                                    Reset Stats
+                                </button>
+                                <button
+                                    onClick={() => setShowAbout(false)}
+                                    className="w-full py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
